@@ -16,8 +16,8 @@ var schema = buildSchema(`
     }
 `);
 
-//ko phai mun kiem gi cung dc dau, phai tao moi co
 
+// hàm để trả về dữ liệu cho type person
 var person = {
     name: () => {
         return 'Duc';
@@ -35,6 +35,8 @@ var root = {
 };
 
 var app = express();
+
+// tạo 1 graphql server trên địa chỉ http://localhost:4000/graphql
 app.use('/graphql',graphqlHTTP({
     schema: schema,
     rootValue: root,
@@ -44,4 +46,5 @@ app.use('/graphql',graphqlHTTP({
 app.listen(4000,'localhost',() => {
     console.log('server stared')
 });
+
 
