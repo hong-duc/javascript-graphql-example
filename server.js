@@ -9,6 +9,7 @@ var {buildSchema} = require('graphql');
 var schema = buildSchema(`
     type Query{
         person: Person
+        hello(name: String): String
     },
     type Person{
         name: String,
@@ -23,6 +24,7 @@ var person = {
         return 'Duc';
     },
     age: () => {
+        console.log('run age')
         return 20;
     }
 };
@@ -31,6 +33,9 @@ var person = {
 var root = {
     person: () => {
         return person;
+    },
+    hello: ({name}) => {
+        return `Hello ${name}`;
     }
 };
 
