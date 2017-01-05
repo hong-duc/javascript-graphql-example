@@ -5,6 +5,73 @@ một ví dụ về Graphql sử dụng trong javascript
 1. phải có cài git https://git-scm.com/downloads
 2. phải có nodejs https://nodejs.org/en/download/
 
+## Schema của demo
+```
+schema {
+  query: query
+  mutation: mutation
+}
+
+# interface animal
+interface Animal {
+  name: String
+}
+
+type Cat implements Animal {
+  name: String
+  sayMeo: String
+}
+
+type Dog implements Animal {
+  name: String
+  bark: String
+}
+
+# jobs of a person
+enum Job {
+  MANAGER
+  PROGRAMMING
+  CODER
+}
+
+# a message
+type Message {
+  name: String
+  quote: String
+}
+
+input MessageInput {
+  name: String
+  quote: String
+}
+
+type mutation {
+  updateMessage(input: MessageInput!): Message
+}
+
+# a person
+type Person {
+  name: String
+  age: Int
+  job: Job
+  friends: [Person]
+}
+
+union Pet = Cat | Dog
+
+type query {
+  message: Message
+  person: Person
+
+  # demo interfaceType
+  getAnimal(id: Int): Animal
+
+  # demo uniontype
+  getPet(id: Int): Pet
+}
+
+```
+
 ## Cách sử dụng
 chạy các lệnh sau đây để lấy nó về thử
 
