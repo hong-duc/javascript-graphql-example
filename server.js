@@ -12,6 +12,12 @@ var {message,
     person3} = require('./demoData');
 
 
+/**
+ type Message {
+  name: String
+  quote: String
+}
+ */
 var MessageType = new graphql.GraphQLObjectType({
     name: 'Message',
     description: 'a message',
@@ -25,6 +31,15 @@ var MessageType = new graphql.GraphQLObjectType({
     }
 });
 
+
+/**
+type Person {
+  name: String
+  age: Int
+  job: Job
+  friends: [Person]
+}
+ */
 var PersonType = new graphql.GraphQLObjectType({
     name: 'Person',
     description: 'a person',
@@ -46,6 +61,13 @@ var PersonType = new graphql.GraphQLObjectType({
     }
 })
 
+/**
+enum Job {
+  MANAGER
+  PROGRAMMING
+  CODER
+}
+ */
 var EnumJob = new graphql.GraphQLEnumType({
     name: 'Job',
     description: 'jobs of a person',
@@ -56,6 +78,11 @@ var EnumJob = new graphql.GraphQLEnumType({
     }
 });
 
+/**
+interface Animal {
+  name: String
+}
+ */
 var InterFaceAnimal = new graphql.GraphQLInterfaceType({
     name: 'Animal',
     description: 'interface animal',
@@ -75,6 +102,12 @@ var InterFaceAnimal = new graphql.GraphQLInterfaceType({
     }
 });
 
+/**
+ type Cat implements Animal {
+  name: String
+  sayMeo: String
+}
+ */
 var CatType = new graphql.GraphQLObjectType({
     name: 'Cat',
     fields: {
@@ -88,6 +121,12 @@ var CatType = new graphql.GraphQLObjectType({
     interfaces: [InterFaceAnimal]
 })
 
+/**
+type Dog implements Animal {
+  name: String
+  bark: String
+}
+ */
 var DogType = new graphql.GraphQLObjectType({
     name: 'Dog',
     fields: {
@@ -101,6 +140,9 @@ var DogType = new graphql.GraphQLObjectType({
     interfaces: [InterFaceAnimal]
 })
 
+/**
+union Pet = Cat | Dog
+ */
 var PetType = new graphql.GraphQLUnionType({
     name: 'Pet',
     types: [CatType, DogType],
@@ -114,7 +156,18 @@ var PetType = new graphql.GraphQLUnionType({
     }
 })
 
+/*
+type query {
+  message: Message
+  person: Person
 
+  # demo interfaceType
+  getAnimal(id: Int): Animal
+
+  # demo uniontype
+  getPet(id: Int): Pet
+}
+ */
 var QueryType = new graphql.GraphQLObjectType({
     name: 'query',
     fields: {
@@ -157,6 +210,12 @@ var QueryType = new graphql.GraphQLObjectType({
     }
 })
 
+/*
+input MessageInput {
+  name: String
+  quote: String
+}
+ */
 var MessageInputType = new graphql.GraphQLInputObjectType({
     name: 'MessageInput',
     fields: {
@@ -169,6 +228,11 @@ var MessageInputType = new graphql.GraphQLInputObjectType({
     }
 })
 
+/*
+type mutation {
+  updateMessage(input: MessageInput!): Message
+}
+ */
 var MutationType = new graphql.GraphQLObjectType({
     name: 'mutation',
     fields: {
@@ -190,15 +254,19 @@ var MutationType = new graphql.GraphQLObjectType({
 })
 
 
+
+var schema = new graphql.GraphQLSchema({
+    query: QueryType,
+    types: [PersonType, InterFaceAnimal, CatType, DogType, MessageInputType],
+    mutation: MutationType
+});
+
+
 var app = express();
 
 // tạo 1 graphql server trên địa chỉ http://localhost:4000/graphql
 app.use('/graphql', graphqlHTTP({
-    schema: new graphql.GraphQLSchema({
-        query: QueryType,
-        types: [PersonType, InterFaceAnimal, CatType, DogType, MessageInputType],
-        mutation: MutationType
-    }),
+    schema: schema,
     graphiql: true
 }));
 
