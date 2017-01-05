@@ -1,44 +1,93 @@
 var express = require('express');
 var graphqlHTTP = require('express-graphql');
-var {buildSchema, printSchema, GraphQLInterfaceType, GraphQLObjectType, GraphQLString, GraphQLSchema} = require('graphql');
+var graphql = require('graphql');
 
-var car = new GraphQLObjectType({
-    name: 'car',
-    interfaces: machine,
-    fields: () => {
-        name: { type: GraphQLString }
-    }
-})
 
-var machine = new GraphQLInterfaceType({
-    name: 'machine',
-    resolveType: (value, info) => {
-        return car;
-    },
-    fields: () => {
-        name: { type: GraphQLString }
-    }
-})
 
-var queryType = new GraphQLObjectType({
-    name: 'query',
+var MessageType = new graphql.GraphQLObjectType({
+    name: 'message',
+    description: 'a message',
     fields: {
-        getCar: {
-            type: car,
-            resolve() {
-                return { name: 'a car' };
+        name: {
+            type: graphql.GraphQLString
+        },
+        quote: {
+            type: graphql.GraphQLString
+        }
+    }
+});
+
+var PersonType = new graphql.GraphQLObjectType({
+    name: 'person',
+    description: 'a person',
+    fields: () => {
+        return {
+            name: {
+                type: graphql.GraphQLString
+            },
+            age: {
+                type: graphql.GraphQLInt
+            },
+            job: {
+                type: EnumJob
+            },
+            friends: {
+                type: new graphql.GraphQLList(PersonType)
             }
         }
     }
 })
 
-var schema = new GraphQLSchema({
-    query: queryType
+var EnumJob = new graphql.GraphQLEnumType({
+    name: 'job',
+    description: 'jobs of a person',
+    values: {
+        MANAGER: { value: 0 },
+        PROGRAMMING: { value: 1 },
+        CODER: { value: 2 }
+    }
+});
+
+var InterFaceAnimal = new graphql.GraphQLInterfaceType({
+    name: 'animal',
+    description: 'interface animal',
+    fields: {
+        name: {
+            type: graphql.GraphQLString
+        }
+    },
+    resolveType: (value, info) => {
+
+    }
+});
+
+var QueryType = new graphql.GraphQLObjectType({
+    name: 'query',
+    fields: {
+        message: {
+            type: MessageType,
+            resolve: () => {
+                return message;
+            }
+        },
+        person: {
+            type: PersonType,
+            resolve: () => {
+                return person;
+            }
+        }
+    }
 })
 
-console.log(printSchema(schema))
-var message = "hello world";
-var job = ['MANAGER', 'PROGRAMMER', 'CODER'];
+var message = {
+    name: 'message of the day',
+    quote: 'hello world'
+};
+var job = {
+    MANAGER: { value: 0 },
+    PROGRAMMING: { value: 1 },
+    CODER: { value: 2 }
+};
 
 // hàm để trả về dữ liệu cho type person
 var person = {
@@ -49,7 +98,7 @@ var person = {
         return 20;
     },
     job: () => {
-        return job[0];
+        return 0;
     },
     friends: () => {
         return [person2, person3];
@@ -95,7 +144,9 @@ var cat = {
     sayMeo: () => {
         return 'miao';
     },
-    __resolveType
+    resolveType: (data, context, info) => {
+        return info.schema.getType('Cat');
+    }
 }
 
 var dog = {
@@ -105,7 +156,7 @@ var dog = {
 
 var listAnimal = [cat, dog];
 // tạo ra 1 cái schema, sử dụng ngôn ngữ schema
-var schema = buildSchema(`
+var schema = graphql.buildSchema(`
     type Query{
         person: Person,
         message: String,
@@ -163,11 +214,12 @@ var app = express();
 
 // tạo 1 graphql server trên địa chỉ http://localhost:4000/graphql
 app.use('/graphql', graphqlHTTP({
-    schema: schema,
-    rootValue: root,
+    schema: new graphql.GraphQLSchema({
+        query: QueryType
+    }),
     graphiql: true,
     context: {
-        
+
     }
 }));
 
