@@ -5,7 +5,7 @@ var graphql = require('graphql');
 
 
 var MessageType = new graphql.GraphQLObjectType({
-    name: 'message',
+    name: 'Message',
     description: 'a message',
     fields: {
         name: {
@@ -18,7 +18,7 @@ var MessageType = new graphql.GraphQLObjectType({
 });
 
 var PersonType = new graphql.GraphQLObjectType({
-    name: 'person',
+    name: 'Person',
     description: 'a person',
     fields: () => {
         return {
@@ -39,7 +39,7 @@ var PersonType = new graphql.GraphQLObjectType({
 })
 
 var EnumJob = new graphql.GraphQLEnumType({
-    name: 'job',
+    name: 'Job',
     description: 'jobs of a person',
     values: {
         MANAGER: { value: 0 },
@@ -49,7 +49,7 @@ var EnumJob = new graphql.GraphQLEnumType({
 });
 
 var InterFaceAnimal = new graphql.GraphQLInterfaceType({
-    name: 'animal',
+    name: 'Animal',
     description: 'interface animal',
     fields: {
         name: {
@@ -57,9 +57,42 @@ var InterFaceAnimal = new graphql.GraphQLInterfaceType({
         }
     },
     resolveType: (value, info) => {
+        if (value.type === 'Cat') {
+            return CatType;
+        }
 
+        if (value.type === 'Dog') {
+            return DogType;
+        }
     }
 });
+
+var CatType = new graphql.GraphQLObjectType({
+    name: 'Cat',
+    fields: {
+        name: {
+            type: graphql.GraphQLString
+        },
+        sayMeo: {
+            type: graphql.GraphQLString
+        }
+    },
+    interfaces: [InterFaceAnimal]
+})
+
+var DogType = new graphql.GraphQLObjectType({
+    name: 'Dog',
+    fields: {
+        name: {
+            type: graphql.GraphQLString
+        },
+        bark: {
+            type: graphql.GraphQLString
+        }
+    },
+    interfaces: [InterFaceAnimal]
+})
+
 
 var QueryType = new graphql.GraphQLObjectType({
     name: 'query',
@@ -74,6 +107,17 @@ var QueryType = new graphql.GraphQLObjectType({
             type: PersonType,
             resolve: () => {
                 return person;
+            }
+        },
+        getAnimal: {
+            type: InterFaceAnimal,
+            resolve: (root, {id}) => {
+                return listAnimal[id];
+            },
+            args: {
+                id: {
+                    type: graphql.GraphQLInt
+                }
             }
         }
     }
@@ -138,18 +182,17 @@ var person3 = {
 var listPerson = [person, person2, person3];
 
 var cat = {
+    type: 'Cat',
     name: () => {
         return 'a cat';
     },
     sayMeo: () => {
         return 'miao';
-    },
-    resolveType: (data, context, info) => {
-        return info.schema.getType('Cat');
     }
 }
 
 var dog = {
+    type: 'Dog',
     name: 'a dog',
     bark: 'woof, woof'
 }
@@ -190,37 +233,16 @@ var schema = graphql.buildSchema(`
 
 
 
-// hàm giải quyết cho mỗi câu hỏi
-var root = {
-    person: () => {
-        return person;
-    },
-    message: () => {
-        return message;
-    },
-    personById: ({id}) => {
-        return listPerson[id];
-    },
-    someAnimal: ({id}) => {
-        if (id) {
-            return listAnimal[id];
-        } else {
-            return cat;
-        }
-    }
-};
 
 var app = express();
 
 // tạo 1 graphql server trên địa chỉ http://localhost:4000/graphql
 app.use('/graphql', graphqlHTTP({
     schema: new graphql.GraphQLSchema({
-        query: QueryType
+        query: QueryType,
+        types: [PersonType, InterFaceAnimal, CatType, DogType]
     }),
-    graphiql: true,
-    context: {
-
-    }
+    graphiql: true
 }));
 
 app.listen(4000, 'localhost', () => {
