@@ -157,6 +157,38 @@ var QueryType = new graphql.GraphQLObjectType({
     }
 })
 
+var MessageInputType = new graphql.GraphQLInputObjectType({
+    name: 'MessageInput',
+    fields: {
+        name: {
+            type: graphql.GraphQLString
+        },
+        quote: {
+            type: graphql.GraphQLString
+        }
+    }
+})
+
+var MutationType = new graphql.GraphQLObjectType({
+    name: 'mutation',
+    fields: {
+        updateMessage: {
+            type: MessageType,
+            args: {
+                input: {
+                    type: new graphql.GraphQLNonNull(MessageInputType)
+                }
+            },
+            resolve(root, {input}) {
+                message.name = input.name;
+                message.quote = input.quote;
+                return message;
+            }
+        }
+    }
+
+})
+
 
 var app = express();
 
@@ -164,7 +196,8 @@ var app = express();
 app.use('/graphql', graphqlHTTP({
     schema: new graphql.GraphQLSchema({
         query: QueryType,
-        types: [PersonType, InterFaceAnimal, CatType, DogType]
+        types: [PersonType, InterFaceAnimal, CatType, DogType, MessageInputType],
+        mutation: MutationType
     }),
     graphiql: true
 }));
